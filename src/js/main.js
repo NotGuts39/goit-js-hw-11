@@ -4,7 +4,10 @@ import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 
 
-
+const simpleLightbox = new SimpleLightbox('.gallery a', {
+                captionsData: 'alt',
+                captionDelay: 250,
+                });
 
 const loader = document.getElementById('loader');
 
@@ -16,24 +19,37 @@ function hideLoader() {
     loader.style.display = 'none';
 }
 
-function searchImages() {
-    const searchInput = document.getElementById('searchInput').value;
-    const imageGallery = document.getElementById('imageGallery');
-
-    function clearGallery() {
+function clearGallery() {
         imageGallery.innerHTML = '';
-    }
+}
+    
 
+const imageGallery = document.getElementById('imageGallery');
+
+
+function searchImages(searchInput) {
     const apiKey = '41282731-c9c58555d497b62011b46ee39';
     const apiUrl = `https://pixabay.com/api/?key=${apiKey}&q=${searchInput}&image_type=photo&orientation=horizontal&safesearch=true`;
-
-    clearGallery();
     
     
-
-    fetch(apiUrl)
+    return fetch(apiUrl)
         .then(response => response.json())
-        .then(data => {
+        
+}
+
+document.getElementById('searchForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const searchInput = document.getElementById('searchInput').value.trim();
+    if (!searchInput) {
+        iziToast.error({
+                    title: 'Error',
+                    message: 'Sorry, the text input field is empty. Please try again.',
+                    position: 'topCenter',
+        });
+        return;
+    }
+
+    searchImages(searchInput).then(data => {
             hideLoader();
 
             if (data.hits.length > 0) {
@@ -51,15 +67,12 @@ function searchImages() {
 
                 imageGallery.innerHTML = imageCardsHTML;
 
-               
+               simpleLightbox.refresh();
 
                 
-                const simpleLightbox = new SimpleLightbox('.gallery a', {
-                captionsData: 'alt',
-                captionDelay: 250,
-                });
                 
-                  simpleLightbox.refresh();
+                
+                  
                   
             } else {
                 iziToast.error({
@@ -72,10 +85,9 @@ function searchImages() {
         .catch(error => {
             console.error('error', error);
         });
-}
-
-document.getElementById('searchForm').addEventListener('submit', function (event) {
-    event.preventDefault();
     showLoader(); 
-    searchImages();
+
+    
+    
 });
+
